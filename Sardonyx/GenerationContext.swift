@@ -5,6 +5,8 @@ class GenerationContext {
     
     private(set) var globalDataBlob = Data()
     
+    public var sourceBuilder = SourceStringBuilder()
+    
     init(graph: Onnx_GraphProto) {
         self.tensors = graph.initializer.reduce(into: [:]) { (res, tensor) in
             res[tensor.name] = tensor

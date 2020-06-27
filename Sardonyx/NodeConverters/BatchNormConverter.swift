@@ -55,23 +55,21 @@ class BatchNormConverter: NodeConverter {
         self.variangeLength = variance.floatData.count
     }
     
-    func contributeProperties(using: GenerationContext) -> String {
-        "var layer_\(self.node.name): BatchNorm<Float>\n"
+    func contributeProperties(using context: GenerationContext) {
+        context.sourceBuilder.add(line: "var layer_\(self.node.name): BatchNorm<Float>")
     }
     
-    func contributeInit(using: GenerationContext) -> String {
-        let offsetInit = "let offset_\(self.node.name) = Tensor<Float>(shape: [\(self.BLength)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.BOffset)).assumingMemoryBound(to: Float.self), count: \(self.BLength)), on: Device.defaultXLA)\n"
-        let scaleInit = "let scale_\(self.node.name) = Tensor<Float>(shape: [\(self.scaleLength)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.scaleOffset)).assumingMemoryBound(to: Float.self), count: \(self.scaleLength)), on: Device.defaultXLA)\n"
-        let meanInit = "let mean_\(self.node.name) = Tensor<Float>(shape: [\(self.meanLength)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.meanOffset)).assumingMemoryBound(to: Float.self), count: \(self.meanLength)), on: Device.defaultXLA)\n"
-        let varInit = "let var_\(self.node.name) = Tensor<Float>(shape: [\(self.variangeLength)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.variangeOffset)).assumingMemoryBound(to: Float.self), count: \(self.variangeLength)), on: Device.defaultXLA)\n"
+    func contributeInit(using context: GenerationContext) {
+        context.sourceBuilder.add(line: "let offset_\(self.node.name) = Tensor<Float>(shape: [\(self.BLength)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.BOffset)).assumingMemoryBound(to: Float.self), count: \(self.BLength)), on: device)")
+        context.sourceBuilder.add(line: "let scale_\(self.node.name) = Tensor<Float>(shape: [\(self.scaleLength)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.scaleOffset)).assumingMemoryBound(to: Float.self), count: \(self.scaleLength)), on: device)")
+        context.sourceBuilder.add(line: "let mean_\(self.node.name) = Tensor<Float>(shape: [\(self.meanLength)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.meanOffset)).assumingMemoryBound(to: Float.self), count: \(self.meanLength)), on: device)")
+        context.sourceBuilder.add(line: "let var_\(self.node.name) = Tensor<Float>(shape: [\(self.variangeLength)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.variangeOffset)).assumingMemoryBound(to: Float.self), count: \(self.variangeLength)), on: device)")
         
-        let convInit = "self.layer_\(self.node.name) = BatchNorm<Float>(axis: -1, momentum: \(self.momentum), offset: offset_\(self.node.name), scale: scale_\(self.node.name), epsilon: \(self.eps), runningMean: mean_\(self.node.name), runningVariance: var_\(self.node.name))\n"
-        
-        return offsetInit + scaleInit + meanInit + varInit + convInit
+        context.sourceBuilder.add(line: "self.layer_\(self.node.name) = BatchNorm<Float>(axis: -1, momentum: \(self.momentum), offset: offset_\(self.node.name), scale: scale_\(self.node.name), epsilon: \(self.eps), runningMean: mean_\(self.node.name), runningVariance: var_\(self.node.name))")
     }
     
-    func contributeImplementation(using: GenerationContext) -> String {
+    func contributeImplementation(using context: GenerationContext)  {
         let outputname = self.node.output[0]
-        return "let _\(outputname) = self.layer_\(self.node.name)(_\(self.node.input[0]))\n"
+        context.sourceBuilder.add(line: "let _\(outputname) = self.layer_\(self.node.name)(_\(self.node.input[0]))")
     }
 }

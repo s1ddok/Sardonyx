@@ -25,26 +25,51 @@ class GraphConverter {
     func source() throws -> String {
         let converters = self.graph.node.map { self.converters[$0.opType]!.init(node: $0) }
         try converters.forEach { try $0.prepareData(using: self.context) }
-        var source = "public struct \(self.graph.name): Layer {\n"
-        for c in converters {
-            source += c.contributeProperties(using: self.context)
+        
+        let sourceBuilder = self.context.sourceBuilder
+        sourceBuilder.add(line: "// This is file is auto-generated, edit it with causion")
+        sourceBuilder.add(line: "import TensorFlow")
+        sourceBuilder.blankLine()
+        
+        sourceBuilder.add(rawString: "public struct \(self.graph.name): Layer ")
+        sourceBuilder.scope {
+            for c in converters {
+                c.contributeProperties(using: self.context)
+            }
+            
+            sourceBuilder.add(rawString: "init(data: UnsafeRawPointer, device: Device) ")
+            sourceBuilder.scope {
+                for c in converters {
+                    c.contributeInit(using: self.context)
+                }
+            }
+            
+            let inputs = self.graph
+                .input
+                .filter { self.context.tensors[$0.name] == nil }
+                .map { "_ _\($0.name): Tensor<Float>" }.joined(separator: ", ")
+            let outputs: String
+            if self.graph.output.count > 1 {
+                outputs = "(\(self.graph.output.map { "_\($0.name): Tensor<Float>" }.joined(separator: ", ")))"
+            } else {
+                outputs = "Tensor<Float>"
+            }
+            sourceBuilder.add(rawString: "@differentiable public func callAsFunction(\(inputs)) -> \(outputs) ")
+            sourceBuilder.scope {
+                for c in converters {
+                    c.contributeImplementation(using: self.context)
+                }
+                
+                let outputsToReturn = self.graph.output.map { "_\($0.name)" }.joined(separator: ", ")
+                if self.graph.output.count > 1 {
+                    sourceBuilder.add(line: "return (\(outputsToReturn))")
+                } else {
+                    sourceBuilder.add(line: "return \(outputsToReturn)")
+                }
+            }
         }
         
-        source += "   init(data: UnsafeRawPointer) {\n"
-        for c in converters {
-            source += c.contributeInit(using: self.context)
-        }
-        source += "   }\n"
-        
-        source += "   @differentiable public func callAsFunction(_ _\(self.graph.input[0].name): Tensor<Float>) -> Tensor<Float> {\n"
-        for c in converters {
-            source += c.contributeImplementation(using: self.context)
-        }
-        source += "       return _\(self.graph.output[0].name)\n"
-        source += "   }\n"
-        source += "}\n"
-        
-        return source
+        return sourceBuilder.result
     }
     
     func serialize(in directoryURL: URL, with name: String? = nil) throws {

@@ -49,26 +49,24 @@ class DenseConverter: NodeConverter {
         }
     }
     
-    func contributeProperties(using: GenerationContext) -> String {
-        "var layer_\(self.node.name): Dense<Float>\n"
+    func contributeProperties(using context: GenerationContext) {
+        context.sourceBuilder.add(line: "var layer_\(self.node.name): Dense<Float>")
     }
     
-    func contributeInit(using: GenerationContext) -> String {
-        let wInit = "let weight_\(self.node.name) = Tensor<Float>(shape: [\(self.inputChannels), \(self.outputChannels)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.weightOffset)).assumingMemoryBound(to: Float.self), count: \(self.inputChannels * self.outputChannels)), on: Device.defaultXLA)\n"
-        let bInit: String
+    func contributeInit(using context: GenerationContext) {
+        context.sourceBuilder.add(line: "let weight_\(self.node.name) = Tensor<Float>(shape: [\(self.inputChannels), \(self.outputChannels)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.weightOffset)).assumingMemoryBound(to: Float.self), count: \(self.inputChannels * self.outputChannels)), on: device)")
+        
         if self.hasBias {
-            bInit = "let bias_\(self.node.name) = Tensor<Float>(shape: [\(self.outputChannels)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.biasOffset!)).assumingMemoryBound(to: Float.self), count: \(self.outputChannels)), on: Device.defaultXLA)\n"
+            context.sourceBuilder.add(line: "let bias_\(self.node.name) = Tensor<Float>(shape: [\(self.outputChannels)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.biasOffset!)).assumingMemoryBound(to: Float.self), count: \(self.outputChannels)), on: device)")
         } else {
-            bInit = "let bias_\(self.node.name): Tensor<Float>? = nil\n"
+            context.sourceBuilder.add(line: "let bias_\(self.node.name): Tensor<Float>? = nil")
         }
         
-        let convInit = "self.layer_\(self.node.name) = Dense<Float>(weight: weight_\(self.node.name), bias: bias_\(self.node.name), activation: { $0 })\n"
-        
-        return wInit + bInit + convInit
+        context.sourceBuilder.add(line: "self.layer_\(self.node.name) = Dense<Float>(weight: weight_\(self.node.name), bias: bias_\(self.node.name), activation: { $0 })")
     }
     
-    func contributeImplementation(using: GenerationContext) -> String {
+    func contributeImplementation(using context: GenerationContext) {
         let outputname = self.node.output[0]
-        return "let _\(outputname) = self.layer_\(self.node.name)(_\(self.node.input[0]))\n"
+        context.sourceBuilder.add(line: "let _\(outputname) = self.layer_\(self.node.name)(_\(self.node.input[0]))")
     }
 }

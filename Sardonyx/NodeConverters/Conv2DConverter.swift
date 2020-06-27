@@ -28,27 +28,24 @@ class Conv2DConverter: NodeConverter {
         }
     }
     
-    func contributeProperties(using: GenerationContext) -> String {
-        "var layer_\(self.node.name): Conv2D<Float>\n"
+    func contributeProperties(using context: GenerationContext) {
+        context.sourceBuilder.add(line: "var layer_\(self.node.name): Conv2D<Float>")
     }
     
-    func contributeInit(using: GenerationContext) -> String {
-        let wInit = "let weight_\(self.node.name) = Tensor<Float>(shape: [\(self.kernel.height), \(self.kernel.width), \(self.inputChannels), \(self.outputChannels)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.weightOffset)).assumingMemoryBound(to: Float.self), count: \(self.kernel.width * self.kernel.height * self.inputChannels * self.outputChannels)), on: Device.defaultXLA)\n"
-        let bInit: String
+    func contributeInit(using context: GenerationContext) {
+        context.sourceBuilder.add(line: "let weight_\(self.node.name) = Tensor<Float>(shape: [\(self.kernel.height), \(self.kernel.width), \(self.inputChannels), \(self.outputChannels)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.weightOffset)).assumingMemoryBound(to: Float.self), count: \(self.kernel.width * self.kernel.height * self.inputChannels * self.outputChannels)), on: device)")
         if self.hasBias {
-            bInit = "let bias_\(self.node.name) = Tensor<Float>(shape: [\(self.outputChannels)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.biasOffset!)).assumingMemoryBound(to: Float.self), count: \(self.outputChannels)), on: Device.defaultXLA)\n"
+            context.sourceBuilder.add(line: "let bias_\(self.node.name) = Tensor<Float>(shape: [\(self.outputChannels)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(self.biasOffset!)).assumingMemoryBound(to: Float.self), count: \(self.outputChannels)), on: device)")
         } else {
-            bInit = "let bias_\(self.node.name): Tensor<Float>? = nil\n"
+            context.sourceBuilder.add(line: "let bias_\(self.node.name): Tensor<Float>? = nil")
         }
         
-        let convInit = "self.layer_\(self.node.name) = Conv2D<Float>(filter: weight_\(self.node.name), bias: bias_\(self.node.name), activation: { $0 }, strides: (\(self.strides.width), \(self.strides.height)), padding: .\(self.padding), dilations: (\(self.dilations.width), \(self.dilations.height)))\n"
-        
-        return wInit + bInit + convInit
+        context.sourceBuilder.add(line: "self.layer_\(self.node.name) = Conv2D<Float>(filter: weight_\(self.node.name), bias: bias_\(self.node.name), activation: { $0 }, strides: (\(self.strides.width), \(self.strides.height)), padding: .\(self.padding), dilations: (\(self.dilations.width), \(self.dilations.height)))")
     }
     
-    func contributeImplementation(using: GenerationContext) -> String {
+    func contributeImplementation(using context: GenerationContext) {
         let outputname = self.node.output[0]
-        return "let _\(outputname) = self.layer_\(self.node.name)(_\(self.node.input[0]))\n"
+        context.sourceBuilder.add(line: "let _\(outputname) = self.layer_\(self.node.name)(_\(self.node.input[0]))")
     }
     
     let node: Onnx_NodeProto

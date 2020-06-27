@@ -1,0 +1,7 @@
+public typealias Shape = (channels: Int, width: Int, height: Int, depth: Int)
+public typealias Kernel = (height: Int, width: Int)
+public typealias Strides = (height: Int, width: Int)
+public typealias Dilations = (height: Int, width: Int)
+public typealias Pads = (top: Int, left: Int, bottom: Int, right: Int)
+public typealias Padding = (height: Int, width: Int)
+public typealias Scales = (height: Int, width: Int)

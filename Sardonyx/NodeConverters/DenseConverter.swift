@@ -1,12 +1,14 @@
 import Foundation
 
-class DenseConverter: NodeConverter {
+class DenseConverter: NodeConverter, ActivationConverterInjectable {
     let node: Onnx_NodeProto
     let hasBias: Bool
     var weightOffset: Int = 0
     var inputChannels: Int = 0
     var outputChannels: Int = 0
     var biasOffset: Int? = nil
+    
+    var activationConverter: ActivationConverter? = nil
     
     required init(node: Onnx_NodeProto) {
         self.node = node
@@ -62,11 +64,12 @@ class DenseConverter: NodeConverter {
             context.sourceBuilder.add(line: "let bias_\(self.node.name): Tensor<Float>? = nil")
         }
         
-        context.sourceBuilder.add(line: "self.layer_\(self.node.name) = Dense<Float>(weight: weight_\(self.node.name), bias: bias_\(self.node.name), activation: { $0 })")
+        let activationClosure = self.activationConverter?.closure ?? "identity"
+        context.sourceBuilder.add(line: "self.layer_\(self.node.name) = Dense<Float>(weight: weight_\(self.node.name), bias: bias_\(self.node.name), activation: \(activationClosure))")
     }
     
     func contributeImplementation(using context: GenerationContext) {
-        let outputname = self.node.output[0]
+        let outputname = self.activationConverter?.output ?? self.node.output[0]
         context.sourceBuilder.add(line: "let _\(outputname) = self.layer_\(self.node.name)(_\(self.node.input[0]))")
     }
 }

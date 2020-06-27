@@ -29,8 +29,8 @@ public class SourceStringBuilder {
         result += rawString
     }
     
-    public func scope(_ workload: () -> Void) {
-        self.add(rawString: "{\n")
+    public func scope(with string: String, _ workload: () -> Void) {
+        self.add(line: string + " {")
         self.pushLevel()
         
         workload()

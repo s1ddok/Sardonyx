@@ -23,7 +23,24 @@ class GraphConverter {
     }
     
     func source() throws -> String {
-        let converters = self.graph.node.map { self.converters[$0.opType]!.init(node: $0) }
+        var converters = self.graph.node.map { self.converters[$0.opType]!.init(node: $0) }
+        
+        var i = 0
+        while i < converters.count - 1 {
+            defer {
+                i += 1
+            }
+            guard
+                let activationInjectable = converters[i] as? ActivationConverterInjectable,
+                let subsequentActivation = converters[i + 1] as? ActivationConverter
+            else {
+                continue
+            }
+            
+            activationInjectable.activationConverter = subsequentActivation
+            converters.remove(at: i + 1)
+        }
+        
         try converters.forEach { try $0.prepareData(using: self.context) }
         
         let sourceBuilder = self.context.sourceBuilder
@@ -31,18 +48,18 @@ class GraphConverter {
         sourceBuilder.add(line: "import TensorFlow")
         sourceBuilder.blankLine()
         
-        sourceBuilder.add(rawString: "public struct \(self.graph.name): Layer ")
-        sourceBuilder.scope {
+        sourceBuilder.scope(with: "public struct \(self.graph.name): Layer") {
             for c in converters {
                 c.contributeProperties(using: self.context)
             }
             
-            sourceBuilder.add(rawString: "init(data: UnsafeRawPointer, device: Device) ")
-            sourceBuilder.scope {
+            sourceBuilder.blankLine()
+            sourceBuilder.scope(with: "init(data: UnsafeRawPointer, device: Device)") {
                 for c in converters {
                     c.contributeInit(using: self.context)
                 }
             }
+            sourceBuilder.blankLine()
             
             let inputs = self.graph
                 .input
@@ -54,8 +71,8 @@ class GraphConverter {
             } else {
                 outputs = "Tensor<Float>"
             }
-            sourceBuilder.add(rawString: "@differentiable public func callAsFunction(\(inputs)) -> \(outputs) ")
-            sourceBuilder.scope {
+            
+            sourceBuilder.scope(with: "@differentiable public func callAsFunction(\(inputs)) -> \(outputs)") {
                 for c in converters {
                     c.contributeImplementation(using: self.context)
                 }

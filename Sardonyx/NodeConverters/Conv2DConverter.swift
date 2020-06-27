@@ -1,6 +1,6 @@
 import Foundation
 
-class Conv2DConverter: NodeConverter {
+class Conv2DConverter: NodeConverter, ActivationConverterInjectable {
     func prepareData(using context: GenerationContext) throws {
         guard
             let weight = context.tensors[self.node.input[1]]
@@ -40,11 +40,12 @@ class Conv2DConverter: NodeConverter {
             context.sourceBuilder.add(line: "let bias_\(self.node.name): Tensor<Float>? = nil")
         }
         
-        context.sourceBuilder.add(line: "self.layer_\(self.node.name) = Conv2D<Float>(filter: weight_\(self.node.name), bias: bias_\(self.node.name), activation: { $0 }, strides: (\(self.strides.width), \(self.strides.height)), padding: .\(self.padding), dilations: (\(self.dilations.width), \(self.dilations.height)))")
+        let activationClosure = self.activationConverter?.closure ?? "identity"
+        context.sourceBuilder.add(line: "self.layer_\(self.node.name) = Conv2D<Float>(filter: weight_\(self.node.name), bias: bias_\(self.node.name), activation: \(activationClosure), strides: (\(self.strides.width), \(self.strides.height)), padding: .\(self.padding), dilations: (\(self.dilations.width), \(self.dilations.height)))")
     }
     
     func contributeImplementation(using context: GenerationContext) {
-        let outputname = self.node.output[0]
+        let outputname = self.activationConverter?.output ?? self.node.output[0]
         context.sourceBuilder.add(line: "let _\(outputname) = self.layer_\(self.node.name)(_\(self.node.input[0]))")
     }
     
@@ -60,6 +61,8 @@ class Conv2DConverter: NodeConverter {
     let strides: Strides
     
     let padding: String
+    
+    var activationConverter: ActivationConverter? = nil
     
     required init(node: Onnx_NodeProto) {
         self.node = node

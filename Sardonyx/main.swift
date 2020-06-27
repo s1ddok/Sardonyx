@@ -1,12 +1,6 @@
-//
-//  main.swift
-//  Sardonyx
-//
-//  Created by Andrey Volodin on 12.06.2020.
-//  Copyright © 2020 Andrey Volodin. All rights reserved.
-//
-
 import Foundation
 
-print("Hello, World!")
+let onnx = try Onnx_ModelProto(serializedData: Data(contentsOf: URL(fileURLWithPath: "/Users/av/Downloads/mobilenetv2-7.onnx")))
 
+let converter = GraphConverter(graph: onnx.graph)
+try! converter.serialize(in: URL(fileURLWithPath: "/Users/av/Downloads/", isDirectory: true))

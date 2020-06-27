@@ -3,11 +3,32 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A2254F0724A69FFB000E26AC /* onnx.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F0624A69FFB000E26AC /* onnx.pb.swift */; };
+		A2254F0F24A78219000E26AC /* NodeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F0E24A78219000E26AC /* NodeConverter.swift */; };
+		A2254F1124A7823C000E26AC /* Conv2DConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F1024A7823C000E26AC /* Conv2DConverter.swift */; };
+		A2254F1324A78261000E26AC /* MaxPoolConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F1224A78261000E26AC /* MaxPoolConverter.swift */; };
+		A2254F1524A782BF000E26AC /* ReshapeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F1424A782BF000E26AC /* ReshapeConverter.swift */; };
+		A2254F1724A782D9000E26AC /* BatchNormConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F1624A782D9000E26AC /* BatchNormConverter.swift */; };
+		A2254F1924A7835F000E26AC /* DenseConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F1824A7835F000E26AC /* DenseConverter.swift */; };
+		A2254F1B24A78383000E26AC /* GlobalAveragePoolConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F1A24A78383000E26AC /* GlobalAveragePoolConverter.swift */; };
+		A2254F1D24A78395000E26AC /* DropOutConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F1C24A78395000E26AC /* DropOutConverter.swift */; };
+		A2254F1F24A783A9000E26AC /* FlattenConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F1E24A783A9000E26AC /* FlattenConverter.swift */; };
+		A2254F2124A783C7000E26AC /* RELUConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F2024A783C7000E26AC /* RELUConverter.swift */; };
+		A2254F2324A783D0000E26AC /* AddConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F2224A783D0000E26AC /* AddConverter.swift */; };
+		A2254F2524A783E9000E26AC /* TypeDefinitions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F2424A783E9000E26AC /* TypeDefinitions.swift */; };
+		A2254F2724A78405000E26AC /* Array+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F2624A78405000E26AC /* Array+Extensions.swift */; };
+		A2254F2924A7843F000E26AC /* GenerationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F2824A7843F000E26AC /* GenerationContext.swift */; };
+		A2254F2B24A7845B000E26AC /* GraphConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F2A24A7845B000E26AC /* GraphConverter.swift */; };
+		A2254F2D24A78567000E26AC /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F2C24A78567000E26AC /* File.swift */; };
+		A2254F3124A7881B000E26AC /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = A2254F3024A7881B000E26AC /* ArgumentParser */; };
+		A2254F3324A78822000E26AC /* CLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F3224A78822000E26AC /* CLI.swift */; };
+		A2254F3524A78A36000E26AC /* SourceStringBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2254F3424A78A36000E26AC /* SourceStringBuilder.swift */; };
 		A2CB40C624940E11006E1065 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB40C524940E11006E1065 /* main.swift */; };
+		A2CB40D02494116D006E1065 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = A2CB40CF2494116D006E1065 /* SwiftProtobuf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,6 +44,26 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A2254F0624A69FFB000E26AC /* onnx.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = onnx.pb.swift; path = ../../../job/Smelter/Sources/onnx.pb.swift; sourceTree = "<group>"; };
+		A2254F0E24A78219000E26AC /* NodeConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeConverter.swift; sourceTree = "<group>"; };
+		A2254F1024A7823C000E26AC /* Conv2DConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conv2DConverter.swift; sourceTree = "<group>"; };
+		A2254F1224A78261000E26AC /* MaxPoolConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaxPoolConverter.swift; sourceTree = "<group>"; };
+		A2254F1424A782BF000E26AC /* ReshapeConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshapeConverter.swift; sourceTree = "<group>"; };
+		A2254F1624A782D9000E26AC /* BatchNormConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchNormConverter.swift; sourceTree = "<group>"; };
+		A2254F1824A7835F000E26AC /* DenseConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DenseConverter.swift; sourceTree = "<group>"; };
+		A2254F1A24A78383000E26AC /* GlobalAveragePoolConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalAveragePoolConverter.swift; sourceTree = "<group>"; };
+		A2254F1C24A78395000E26AC /* DropOutConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropOutConverter.swift; sourceTree = "<group>"; };
+		A2254F1E24A783A9000E26AC /* FlattenConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlattenConverter.swift; sourceTree = "<group>"; };
+		A2254F2024A783C7000E26AC /* RELUConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RELUConverter.swift; sourceTree = "<group>"; };
+		A2254F2224A783D0000E26AC /* AddConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddConverter.swift; sourceTree = "<group>"; };
+		A2254F2424A783E9000E26AC /* TypeDefinitions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeDefinitions.swift; sourceTree = "<group>"; };
+		A2254F2624A78405000E26AC /* Array+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Array+Extensions.swift"; sourceTree = "<group>"; };
+		A2254F2824A7843F000E26AC /* GenerationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerationContext.swift; sourceTree = "<group>"; };
+		A2254F2A24A7845B000E26AC /* GraphConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphConverter.swift; sourceTree = "<group>"; };
+		A2254F2C24A78567000E26AC /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		A2254F2E24A787DA000E26AC /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		A2254F3224A78822000E26AC /* CLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CLI.swift; sourceTree = "<group>"; };
+		A2254F3424A78A36000E26AC /* SourceStringBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceStringBuilder.swift; sourceTree = "<group>"; };
 		A2CB40C224940E11006E1065 /* Sardonyx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Sardonyx; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2CB40C524940E11006E1065 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -32,15 +73,36 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2254F3124A7881B000E26AC /* ArgumentParser in Frameworks */,
+				A2CB40D02494116D006E1065 /* SwiftProtobuf in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A2254F0D24A7820C000E26AC /* NodeConverters */ = {
+			isa = PBXGroup;
+			children = (
+				A2254F0E24A78219000E26AC /* NodeConverter.swift */,
+				A2254F1024A7823C000E26AC /* Conv2DConverter.swift */,
+				A2254F1224A78261000E26AC /* MaxPoolConverter.swift */,
+				A2254F1424A782BF000E26AC /* ReshapeConverter.swift */,
+				A2254F1624A782D9000E26AC /* BatchNormConverter.swift */,
+				A2254F1824A7835F000E26AC /* DenseConverter.swift */,
+				A2254F1A24A78383000E26AC /* GlobalAveragePoolConverter.swift */,
+				A2254F1C24A78395000E26AC /* DropOutConverter.swift */,
+				A2254F1E24A783A9000E26AC /* FlattenConverter.swift */,
+				A2254F2024A783C7000E26AC /* RELUConverter.swift */,
+				A2254F2224A783D0000E26AC /* AddConverter.swift */,
+			);
+			path = NodeConverters;
+			sourceTree = "<group>";
+		};
 		A2CB40B924940E11006E1065 = {
 			isa = PBXGroup;
 			children = (
+				A2254F2E24A787DA000E26AC /* README.md */,
 				A2CB40C424940E11006E1065 /* Sardonyx */,
 				A2CB40C324940E11006E1065 /* Products */,
 			);
@@ -57,7 +119,16 @@
 		A2CB40C424940E11006E1065 /* Sardonyx */ = {
 			isa = PBXGroup;
 			children = (
+				A2254F0D24A7820C000E26AC /* NodeConverters */,
 				A2CB40C524940E11006E1065 /* main.swift */,
+				A2254F0624A69FFB000E26AC /* onnx.pb.swift */,
+				A2254F2424A783E9000E26AC /* TypeDefinitions.swift */,
+				A2254F2624A78405000E26AC /* Array+Extensions.swift */,
+				A2254F2824A7843F000E26AC /* GenerationContext.swift */,
+				A2254F2A24A7845B000E26AC /* GraphConverter.swift */,
+				A2254F2C24A78567000E26AC /* File.swift */,
+				A2254F3224A78822000E26AC /* CLI.swift */,
+				A2254F3424A78A36000E26AC /* SourceStringBuilder.swift */,
 			);
 			path = Sardonyx;
 			sourceTree = "<group>";
@@ -78,6 +149,10 @@
 			dependencies = (
 			);
 			name = Sardonyx;
+			packageProductDependencies = (
+				A2CB40CF2494116D006E1065 /* SwiftProtobuf */,
+				A2254F3024A7881B000E26AC /* ArgumentParser */,
+			);
 			productName = Sardonyx;
 			productReference = A2CB40C224940E11006E1065 /* Sardonyx */;
 			productType = "com.apple.product-type.tool";
@@ -106,6 +181,10 @@
 				Base,
 			);
 			mainGroup = A2CB40B924940E11006E1065;
+			packageReferences = (
+				A2CB40CE2494116D006E1065 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				A2254F2F24A7881B000E26AC /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
+			);
 			productRefGroup = A2CB40C324940E11006E1065 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -120,7 +199,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2254F2524A783E9000E26AC /* TypeDefinitions.swift in Sources */,
+				A2254F2724A78405000E26AC /* Array+Extensions.swift in Sources */,
+				A2254F1724A782D9000E26AC /* BatchNormConverter.swift in Sources */,
+				A2254F2924A7843F000E26AC /* GenerationContext.swift in Sources */,
+				A2254F2324A783D0000E26AC /* AddConverter.swift in Sources */,
+				A2254F1324A78261000E26AC /* MaxPoolConverter.swift in Sources */,
+				A2254F1F24A783A9000E26AC /* FlattenConverter.swift in Sources */,
+				A2254F2D24A78567000E26AC /* File.swift in Sources */,
+				A2254F1124A7823C000E26AC /* Conv2DConverter.swift in Sources */,
+				A2254F1B24A78383000E26AC /* GlobalAveragePoolConverter.swift in Sources */,
 				A2CB40C624940E11006E1065 /* main.swift in Sources */,
+				A2254F2124A783C7000E26AC /* RELUConverter.swift in Sources */,
+				A2254F0F24A78219000E26AC /* NodeConverter.swift in Sources */,
+				A2254F1D24A78395000E26AC /* DropOutConverter.swift in Sources */,
+				A2254F0724A69FFB000E26AC /* onnx.pb.swift in Sources */,
+				A2254F3524A78A36000E26AC /* SourceStringBuilder.swift in Sources */,
+				A2254F2B24A7845B000E26AC /* GraphConverter.swift in Sources */,
+				A2254F3324A78822000E26AC /* CLI.swift in Sources */,
+				A2254F1924A7835F000E26AC /* DenseConverter.swift in Sources */,
+				A2254F1524A782BF000E26AC /* ReshapeConverter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +382,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A2254F2F24A7881B000E26AC /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-argument-parser";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.0;
+			};
+		};
+		A2CB40CE2494116D006E1065 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-protobuf.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.6.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A2254F3024A7881B000E26AC /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A2254F2F24A7881B000E26AC /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+		A2CB40CF2494116D006E1065 /* SwiftProtobuf */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A2CB40CE2494116D006E1065 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
+			productName = SwiftProtobuf;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A2CB40BA24940E11006E1065 /* Project object */;
 }

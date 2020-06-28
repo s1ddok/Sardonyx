@@ -14,6 +14,7 @@ Sardonyx is a CLI that converts your *ONNX* model into *Swift code* + structured
 - [ ] Add more layer converters and it's variations (edge-cases, paddings)
 - [ ] Support constant inputs for all the layers
 - [ ] Normalize node/graph names to be valid Swift identifiers 
+- [ ] Provide Sardonyx-as-a-library experience for users to provide their own custom converters
 - [x] Support node sequence folding (like inject subsequent RELU into previous Conv node's activation)
 - [ ] Support other scalar types outside of Float for S4TF 
 - [ ] Introduce a Metal Performance Shaders backend 

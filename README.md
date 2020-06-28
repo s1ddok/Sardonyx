@@ -1,6 +1,6 @@
 #  Sardonyx 
 
-> ❗️Warning: this is a half-weekend project in the beginning of it's development so please use it with caution and be ready to dive into sources in order to make it work
+> ❗️Warning: this project is in the beginning of its' development so please use it with caution and be ready to dive into sources in order to make it work
 
 Sardonyx is a CLI that converts your *ONNX* model into *Swift code* + structured *data blob*, allowing you to easily reuse models that were created using frameworks like PyTorch or TensorFlow. It does all the nasty things for you as well, like transposing weights and packing them into a single, convenient file, while also generating parsing logic for you. 
 

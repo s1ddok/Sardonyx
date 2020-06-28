@@ -24,7 +24,11 @@ class GraphConverter {
             "Pad": PadConverter.self,
             "InstanceNormalization": InstanceNormConverter.self,
             "Constant": ConstantConverter.self,
-            "ConvTranspose": ConvTranspose2DConverter.self
+            "ConvTranspose": ConvTranspose2DConverter.self,
+            "LeakyRelu": LeakyRELUConverter.self,
+            "Tanh": TanhConverter.self,
+            "Upsample": UpsampleConverter.self,
+            "Mul": MulConverter.self
         ]
     }
     
@@ -50,35 +54,78 @@ class GraphConverter {
         try converters.forEach { try $0.prepareData(using: self.context) }
         
         let sourceBuilder = self.context.sourceBuilder
-        sourceBuilder.add(line: "// This is file is auto-generated, edit it with causion")
+        sourceBuilder.add(line: "// This file is auto-generated, edit it with causion")
         sourceBuilder.add(line: "import TensorFlow")
         sourceBuilder.blankLine()
         
         sourceBuilder.scope(with: "public struct \(self.graph.name): Layer") {
+            let userInputs = self.graph
+                .input
+                .filter { self.context.tensors[$0.name] == nil }
+            
+            if userInputs.count > 1 {
+                sourceBuilder.scope(with: "public struct Input: Differentiable") {
+                    userInputs.forEach { sourceBuilder.add(line: "var _\($0.name): Tensor<Float>") }
+                }
+            } else {
+                sourceBuilder.add(line: "public typealias Input = Tensor<Float>")
+            }
+
+            if self.graph.output.count > 1 {
+                let outputsTuple = "\(self.graph.output.map { "_\($0.name): Tensor<Float>" }.joined(separator: ", ")))"
+                sourceBuilder.add(line: "public typealias Output = (\(outputsTuple))")
+            } else {
+                sourceBuilder.add(line: "public typealias Output = Tensor<Float>")
+            }
+            
             for c in converters {
                 c.contributeProperties(using: self.context)
+                
+                for input in c.graphInputs {
+                    if let _ = self.context.tensors[input] {
+                        sourceBuilder.add(line: "var _\(input): Tensor<Float>")
+                    }
+                }
             }
             
             sourceBuilder.blankLine()
             sourceBuilder.scope(with: "init(data: UnsafeRawPointer, device: Device)") {
                 for c in converters {
                     c.contributeInit(using: self.context)
+                    
+                    for input in c.graphInputs {
+                        if let constantInput = self.context.tensors[input] {
+                            let floats = constantInput.floats
+                            switch constantInput.dims.count {
+                            case 0, 1:
+                                let constantData = floats.withUnsafeBufferPointer { pointer -> Data in
+                                    return Data(buffer: pointer)
+                                }
+                                
+                                let constantOffset = self.context.add(data: constantData)
+                                
+                                self.context.sourceBuilder.add(line: "self._\(input) = Tensor<Float>(shape: [\(constantInput.dims[safe: 0] ?? 1)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(constantOffset)).assumingMemoryBound(to: Float.self), count: \(constantInput.dims[safe: 0] ?? 1)), on: device)")
+                            case 4:
+                                let constantData = floats.transposed(to: [0, 2, 3, 1], assuming: constantInput.dims.map(Int.init)).withUnsafeBufferPointer { pointer -> Data in
+                                    return Data(buffer: pointer)
+                                }
+                                
+                                let constantOffset = self.context.add(data: constantData)
+                                
+                                self.context.sourceBuilder.add(line: "self._\(input) = Tensor<Float>(shape: [\(constantInput.dims[0]), \(constantInput.dims[2]), \(constantInput.dims[3]), \(constantInput.dims[1])], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(constantOffset)).assumingMemoryBound(to: Float.self), count: \(Int(constantInput.dims.reduce(1, *)))), on: device)")
+                            default: fatalError("Constants with rank \(constantInput.dims.count) are not supported")
+                            }
+                        }
+                    }
                 }
             }
             sourceBuilder.blankLine()
             
-            let inputs = self.graph
-                .input
-                .filter { self.context.tensors[$0.name] == nil }
-                .map { "_ _\($0.name): Tensor<Float>" }.joined(separator: ", ")
-            let outputs: String
-            if self.graph.output.count > 1 {
-                outputs = "(\(self.graph.output.map { "_\($0.name): Tensor<Float>" }.joined(separator: ", ")))"
-            } else {
-                outputs = "Tensor<Float>"
-            }
-            
-            sourceBuilder.scope(with: "@differentiable public func callAsFunction(\(inputs)) -> \(outputs)") {
+            sourceBuilder.scope(with: "@differentiable public func callAsFunction(_ input: Input) -> Output") {
+                for userInput in userInputs {
+                    sourceBuilder.add(line: "let _\(userInput.name) = input._\(userInput.name)")
+                }
+                
                 for c in converters {
                     c.contributeImplementation(using: self.context)
                 }

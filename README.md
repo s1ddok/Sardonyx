@@ -2,7 +2,7 @@
 
 > ❗️Warning: this is a half-weekend project in the beginning of it's development so please use it with caution and be ready to dive into sources in order to make it work
 
-Sardonyx is a CLI that converts your *ONNX* model into *Swift code* + structured *data blob*, allowing you to easily reuse models that were created using frameworks like PyTorch or TensorFlow. It does all the nasty things for you as well, like transposing weights and packaing them into a single, convenient file, generating parsing logic for you. 
+Sardonyx is a CLI that converts your *ONNX* model into *Swift code* + structured *data blob*, allowing you to easily reuse models that were created using frameworks like PyTorch or TensorFlow. It does all the nasty things for you as well, like transposing weights and packing them into a single, convenient file, while also generating parsing logic for you. 
 
 ## Roadmap 
 
@@ -12,14 +12,14 @@ Sardonyx is a CLI that converts your *ONNX* model into *Swift code* + structured
 - [x] Support multiple inputs and outputs
 - [x] Support both XLA and TFEager for S4TF
 - [ ] Add more layer converters and it's variations (edge-cases, paddings)
-- [ ] Support constant inputs for all the layers
+- [x] Support constant inputs for all the layers
 - [ ] Normalize node/graph names to be valid Swift identifiers 
 - [ ] Provide Sardonyx-as-a-library experience for users to provide their own custom converters
 - [x] Support node sequence folding (like inject subsequent RELU into previous Conv node's activation)
 - [ ] Support other scalar types outside of Float for S4TF 
 - [ ] Introduce a Metal Performance Shaders backend 
 - [ ] Generate a Swift Package instead of a `.swift` and `.data` files
-- [ ] Generation customization: provide custom input names, custom access level and more
+- [ ] Generation customization: provide custom input names, custom access level, additional outputs and more
 
 ## Dependencies
 
@@ -79,6 +79,10 @@ print(smo.max())
 - Pad
 - Softmax
 - Sigmoid
+- LeakyRelu
+- Tanh
+- Upsample
+- Mul
 
 ## License
 MIT

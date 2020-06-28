@@ -18,12 +18,18 @@ class GraphConverter {
             "Add": AddConverter.self,
             "BatchNormalization": BatchNormConverter.self,
             "Reshape": ReshapeConverter.self,
-            "GlobalAveragePool": GlobalAveragePoolConverter.self
+            "GlobalAveragePool": GlobalAveragePoolConverter.self,
+            "Sigmoid": SigmoidConverter.self,
+            "Softmax": SoftmaxConverter.self,
+            "Pad": PadConverter.self,
+            "InstanceNormalization": InstanceNormConverter.self,
+            "Constant": ConstantConverter.self,
+            "ConvTranspose": ConvTranspose2DConverter.self
         ]
     }
     
     func source() throws -> String {
-        var converters = self.graph.node.map { self.converters[$0.opType]!.init(node: $0) }
+        var converters = self.graph.node.compactMap { self.converters[$0.opType]!.init(node: $0) }
         
         var i = 0
         while i < converters.count - 1 {

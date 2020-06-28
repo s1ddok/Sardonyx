@@ -1,7 +1,7 @@
 import Foundation
 
 class GenerationContext {
-    let tensors: [String: Onnx_TensorProto]
+    private(set) var tensors: [String: Onnx_TensorProto]
     
     private(set) var globalDataBlob = Data()
     
@@ -19,5 +19,9 @@ class GenerationContext {
         self.globalDataBlob.append(data)
         
         return offset
+    }
+    
+    func register(tensor: Onnx_TensorProto, with name: String) {
+        self.tensors[name] = tensor
     }
 }

@@ -122,8 +122,12 @@ class GraphConverter {
             sourceBuilder.blankLine()
             
             sourceBuilder.scope(with: "@differentiable public func callAsFunction(_ input: Input) -> Output") {
-                for userInput in userInputs {
-                    sourceBuilder.add(line: "let _\(userInput.name) = input._\(userInput.name)")
+                if userInputs.count > 1 {
+                    for userInput in userInputs {
+                        sourceBuilder.add(line: "let _\(userInput.name) = input._\(userInput.name)")
+                    }
+                } else {
+                    sourceBuilder.add(line: "let _\(userInputs[0].name) = input")
                 }
                 
                 for c in converters {

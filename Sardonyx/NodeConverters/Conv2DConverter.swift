@@ -11,12 +11,11 @@ class Conv2DConverter: NodeConverter, ActivationConverterInjectable {
             bias = context.tensors[node.input[2]]
         }
         
-        
-        let weightData = weight.floatData.transposed(to: [2, 3, 1, 0],
+        let weightData = weight.floats.transposed(to: [2, 3, 1, 0],
                                                      assuming: weight.dims.map(Int.init)).withUnsafeBufferPointer { pointer -> Data in
             return Data(buffer: pointer)
         }
-        let biasData = bias?.floatData.withUnsafeBufferPointer { pointer -> Data in
+        let biasData = bias?.floats.withUnsafeBufferPointer { pointer -> Data in
             return Data(buffer: pointer)
         }
         

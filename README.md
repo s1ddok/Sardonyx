@@ -12,6 +12,8 @@ Sardonyx is a CLI that converts your *ONNX* model into *Swift code* + structured
 - [x] Support multiple inputs and outputs
 - [x] Support both XLA and TFEager for S4TF
 - [ ] Add more layer converters and it's variations (edge-cases, paddings)
+- [ ] Support constant inputs for all the layers
+- [ ] Normalize node/graph names to be valid Swift identifiers 
 - [x] Support node sequence folding (like inject subsequent RELU into previous Conv node's activation)
 - [ ] Support other scalar types outside of Float for S4TF 
 - [ ] Introduce a Metal Performance Shaders backend 
@@ -28,7 +30,7 @@ Currently I started with an `xcodeproj` setup but `Package.swift` will be introd
 
 ![image](https://i.imgur.com/NmWnKZN.png)
 
-I tested this tool on [VGG-16](https://github.com/onnx/models/blob/master/vision/classification/vgg/model/vgg16-7.onnx), [VGG-19](https://github.com/onnx/models/blob/master/vision/classification/vgg/model/vgg19-7.onnx) and [MobileNetV2](https://github.com/onnx/models/blob/master/vision/classification/mobilenet/model/mobilenetv2-7.onnx) from official ONNX model-zoo. Please don't expect it to work on anything else for now. 
+I tested this tool on [VGG-16](https://github.com/onnx/models/blob/master/vision/classification/vgg/model/vgg16-7.onnx), [VGG-19](https://github.com/onnx/models/blob/master/vision/classification/vgg/model/vgg19-7.onnx) and [MobileNetV2](https://github.com/onnx/models/blob/master/vision/classification/mobilenet/model/mobilenetv2-7.onnx) from official ONNX model-zoo. Please don't expect it to work on anything else for now. You check support layer list to see whether or not you can convert your model now
 
 If everything goes fine you will find two files in your folder: `<YOURMODEL>.swift` and `<YOURMODEL>.data`. Please add them into your Swift 4 TensorFlow project. Once you do this, usage is pretty straightforward, this is a MobileNetV2 example:
 
@@ -70,6 +72,12 @@ print(smo.max())
 - Dropout
 - Add
 - RELU
+- Constant
+- ConvTranspose2D
+- InstanceNorm
+- Pad
+- Softmax
+- Sigmoid
 
 ## License
 MIT

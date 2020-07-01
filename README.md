@@ -4,6 +4,12 @@
 
 Sardonyx is a CLI that converts your *ONNX* model into *Swift code* + structured *data blob*, allowing you to easily reuse models that were created using frameworks like PyTorch or TensorFlow. It does all the nasty things for you as well, like transposing weights and packing them into a single, convenient file, while also generating parsing logic for you. 
 
+## Supported target platforms
+- Swift for TensorFlow
+- Metal Performance Shaders 
+
+Adding BNNS, MLCompute and code for other languages is under consideration, but getting first two to work on a wide variate of models is a first priority for me. 
+
 ## Roadmap 
 
 - [x] Introduce a proof-of-a-concept tool
@@ -16,20 +22,24 @@ Sardonyx is a CLI that converts your *ONNX* model into *Swift code* + structured
 - [ ] Normalize node/graph names to be valid Swift identifiers 
 - [ ] Provide Sardonyx-as-a-library experience for users to provide their own custom converters
 - [x] Support node sequence folding (like inject subsequent RELU into previous Conv node's activation)
-- [ ] Support other scalar types outside of Float for S4TF 
-- [ ] Introduce a Metal Performance Shaders backend 
+- [ ] Support other scalar types outside of Float (i.e. Float16 and quantized weights)
+- [x] Introduce a Metal Performance Shaders backend 
 - [ ] Generate a Swift Package instead of a `.swift` and `.data` files
 - [ ] Generation customization: provide custom input names, custom access level, additional outputs and more
 
 ## Dependencies
 
-I use `SwiftProtobuf` to generate 100% Swift *ONNX* bindings and official `Swift Argument Parser` for CLI.
+I use `SwiftProtobuf` to generate 100% Swift *ONNX* bindings and official `Swift Argument Parser` for CLI. Some generated models require help classes to run, I provide them in this repo. 
 
 ## Build and Run
 
 Currently I started with an `xcodeproj` setup but `Package.swift` will be introduced shortly. In order to run the tool on your own model you have to provide at least two arguments in a `Scheme` settings, i.e.: 
 
 ![image](https://i.imgur.com/NmWnKZN.png)
+
+You have to specify target platform by `--target-platform` option. Currently it acceps `s4tf` or `mps` value.
+
+### S4TF
 
 I tested this tool on [VGG-16](https://github.com/onnx/models/blob/master/vision/classification/vgg/model/vgg16-7.onnx), [VGG-19](https://github.com/onnx/models/blob/master/vision/classification/vgg/model/vgg19-7.onnx) and [MobileNetV2](https://github.com/onnx/models/blob/master/vision/classification/mobilenet/model/mobilenetv2-7.onnx) from official ONNX model-zoo. Please don't expect it to work on anything else for now. You check support layer list to see whether or not you can convert your model now
 
@@ -60,8 +70,18 @@ let smo = softmax(output)
 print(smo.max())
 ```
 
+### MPS
+
+Metal supported is limited compared to S4TF, but I am working on this. Minimal usage example is here:
+
+
+```swift
+
+```
+
 ## Supported layers
 
+### S4TF
 - Conv2D
 - MaxPool2D
 - Flatten
@@ -83,6 +103,15 @@ print(smo.max())
 - Tanh
 - Upsample
 - Mul
+
+### MPS
+- Pad
+- Conv2D
+- InstanceNormalization
+- ConvTranspose2D
+- Add
+- RELU
+- Sigmoid
 
 ## License
 MIT

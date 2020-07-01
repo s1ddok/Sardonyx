@@ -2,6 +2,9 @@ import ArgumentParser
 import Foundation
 
 struct Options: ParsableArguments {
+    @Option(help: ArgumentHelp("Target platform to generate code for", valueName: "target-platform"))
+    var targetPlatform: TargetPlatform
+    
     @Option(help: ArgumentHelp("Path to the input onnx model", valueName: "model-path"))
     var modelPath: String
     

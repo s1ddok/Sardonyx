@@ -72,11 +72,15 @@ print(smo.max())
 
 ### MPS
 
-Metal supported is limited compared to S4TF, but I am working on this. Minimal usage example is here:
-
+Metal supported is limited compared to S4TF, but I am working on this. Minimal usage example (based on [Alloy](https://github.com/s1ddok/Alloy) syntax is here:
 
 ```swift
-
+let model = torch_jit_export(data: pointer.baseAddress!, device: context.device)
+let result = try! context.scheduleAndWait { buffer -> MPSImage in
+    imageScale.encode(commandBuffer: buffer, sourceTexture: texture, destinationTexture: scaledTexture)
+    let mpsimage = MPSImage(texture: scaledTexture, featureChannels: 3)
+    return model.encode(commandBuffer: buffer, _input_1: mpsimage)
+}
 ```
 
 ## Supported layers

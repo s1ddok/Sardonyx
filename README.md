@@ -72,7 +72,7 @@ print(smo.max())
 
 ### MPS
 
-Metal supported is limited compared to S4TF, but I am working on this. Minimal usage example (based on [Alloy](https://github.com/s1ddok/Alloy) syntax is here:
+Metal supported is limited compared to S4TF, but I am working on this. Minimal usage example (based on [Alloy](https://github.com/s1ddok/Alloy) syntax) is here:
 
 ```swift
 let model = torch_jit_export(data: pointer.baseAddress!, device: context.device)

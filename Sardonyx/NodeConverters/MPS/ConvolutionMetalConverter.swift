@@ -1,6 +1,6 @@
 import Foundation
 
-class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, PadInjectable {
+class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, PadInjectable, BatchNormInjectable {
     func prepareData(using context: GenerationContext) throws {
         guard
             let weight = context.tensors[self.node.input[1]]
@@ -25,6 +25,8 @@ class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, Pa
         if let bd = biasData {
             self.biasOffset = context.add(data: bd)
         }
+        
+        try self.batchNorm?.prepareData(using: context)
     }
     
     func contributeProperties(using context: GenerationContext) {
@@ -37,10 +39,14 @@ class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, Pa
         }
         
         let biasString = self.hasBias ? "data.advanced(by: \(self.biasOffset!)).assumingMemoryBound(to: Float.self)" : "nil"
-        context.sourceBuilder.add(line: "let dataSource_\(self.node.name) = ConvolutionDataSource(weights: data.advanced(by: \(self.weightOffset)), bias: \(biasString), outputChannels: \(self.outputChannels), kernelHeight: \(self.kernel.height), kernelWidth: \(self.kernel.width), inputChannels: \(self.inputChannels), dilations: (\(self.dilations.height), \(self.dilations.width)), strides: (\(self.strides.height), \(self.strides.width)), groups: \(self.groups), neuron: \(self.neuron?.neuron ?? "nil"))")
+        var batchNormParameters = ""
+        if let bn = self.batchNorm {
+            batchNormParameters = ", mean: data.advanced(by: \(bn.meanOffset)).assumingMemoryBound(to: Float.self), variance: data.advanced(by: \(bn.variangeOffset)).assumingMemoryBound(to: Float.self), gamma: data.advanced(by: \(bn.scaleOffset)).assumingMemoryBound(to: Float.self), beta: data.advanced(by: \(bn.BOffset)).assumingMemoryBound(to: Float.self), epsilon: \(bn.eps)"
+        }
+        context.sourceBuilder.add(line: "let dataSource_\(self.node.name) = ConvolutionDataSource(weights: data.advanced(by: \(self.weightOffset)), bias: \(biasString), outputChannels: \(self.outputChannels), kernelHeight: \(self.kernel.height), kernelWidth: \(self.kernel.width), inputChannels: \(self.inputChannels), dilations: (\(self.dilations.height), \(self.dilations.width)), strides: (\(self.strides.height), \(self.strides.width)), groups: \(self.groups), neuron: \(self.neuron?.neuron ?? "nil")\(batchNormParameters))")
         
         context.sourceBuilder.add(line: "self.convolution_\(self.node.name) = MPSCNNConvolution(device: device, weights: dataSource_\(self.node.name))")
-        context.sourceBuilder.add(line: "self.convolution_\(self.node.name).accumulatorPrecisionOption = .half")
+        //context.sourceBuilder.add(line: "self.convolution_\(self.node.name).accumulatorPrecisionOption = .half")
         context.sourceBuilder.add(line: "self.convolution_\(self.node.name).destinationImageAllocator = MPSTemporaryImage.defaultAllocator()")
         
         if let pad = self.pad {
@@ -54,8 +60,7 @@ class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, Pa
     }
     
     func contributeImplementation(using context: GenerationContext) {
-        let outputname = self.neuron?.output ?? self.node.output[0]
-        context.sourceBuilder.add(line: "let _\(outputname) = self.convolution_\(self.node.name).encode(commandBuffer: commandBuffer, sourceImage: _\(self.pad?.node.input[0] ?? self.node.input[0]))")
+        context.sourceBuilder.add(line: "let _\(self.graphOutputs[0]) = self.convolution_\(self.node.name).encode(commandBuffer: commandBuffer, sourceImage: _\(self.pad?.node.input[0] ?? self.node.input[0]))")
     }
     
     let node: Onnx_NodeProto
@@ -73,10 +78,11 @@ class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, Pa
     let outputPadding: Padding
     
     var pad: PadMetalConverter? = nil
+    var batchNorm: BatchNormMetalConverter? = nil
     var neuron: FusableMetalNeuron? = nil
     
     var graphInputs: [String] { [ self.pad?.node.input[0] ?? self.node.input[0]] }
-    var graphOutputs: [String] { [ self.neuron?.output ?? self.node.output[0]] }
+    var graphOutputs: [String] { [ self.batchNorm?.node.output[0] ?? self.neuron?.output ?? self.node.output[0]] }
     
     required init(node: Onnx_NodeProto) {
         self.node = node

@@ -6,8 +6,23 @@ class MetalGraphConverter {
     let converters: [String: NodeConverter.Type]
     
     init(graph: Onnx_GraphProto) {
-        self.graph = graph
-        self.context = GenerationContext(graph: graph)
+        let context = GenerationContext(graph: graph)
+        
+        var constantFreeGraph = graph
+        constantFreeGraph.node = constantFreeGraph.node.filter { node in
+            if node.opType == "Constant" {
+                for output in node.output {
+                    context.register(tensor: node.attribute[0].t, with: output)
+                }
+                
+                return false
+            }
+            
+            return true
+        }
+
+        self.context = context
+        self.graph = constantFreeGraph
         self.converters = [
             "Conv": ConvolutionMetalConverter.self,
             "Relu": RELUMetalConverter.self,
@@ -17,6 +32,11 @@ class MetalGraphConverter {
             "InstanceNormalization": InstanceNormalizationMetalConverter.self,
             "Constant": ConstantConverter.self,
             "ConvTranspose": ConvolutionTransposeMetalConverter.self,
+            "Tanh": TanhMetalConverter.self,
+            "Mul": MulMetalConverter.self,
+            "BatchNormalization": BatchNormMetalConverter.self,
+            "Upsample": UpsampleMetalConverter.self,
+            "LeakyRelu": LeakyRELUMetalConverter.self
         ]
     }
     
@@ -37,15 +57,24 @@ class MetalGraphConverter {
             
             guard i < converters.count - 1 else { break }
             
-            guard
-                let neuronInjectable = converters[i] as? FusableMetalNeuronInjectable,
-                let subsequentNeuron = converters[i + 1] as? FusableMetalNeuron
-            else {
-                continue
+            if
+                let bnInjectable = converters[i] as? BatchNormInjectable,
+                let subsequentBN = converters[i + 1] as? BatchNormMetalConverter
+            {
+                bnInjectable.batchNorm = subsequentBN
+                converters.remove(at: i + 1)
             }
             
-            neuronInjectable.neuron = subsequentNeuron
-            converters.remove(at: i + 1)
+            guard i < converters.count - 1 else { break }
+            
+            if
+                let neuronInjectable = converters[i] as? FusableMetalNeuronInjectable,
+                let subsequentNeuron = converters[i + 1] as? FusableMetalNeuron
+            {
+                neuronInjectable.neuron = subsequentNeuron
+                converters.remove(at: i + 1)
+            }
+            
         }
         
         for c in converters {
@@ -74,45 +103,39 @@ class MetalGraphConverter {
                 sourceBuilder.add(line: "public typealias Output = MPSImage")
             }
             
+            var constantInputs = Set<String>()
             for c in converters {
                 c.contributeProperties(using: self.context)
                 
                 for input in c.graphInputs {
-                    if let _ = self.context.tensors[input] {
+                    if let _ = self.context.tensors[input], !constantInputs.contains(input) {
                         sourceBuilder.add(line: "var _\(input): MPSImage")
+                        constantInputs.insert(input)
                     }
                 }
             }
-            
             sourceBuilder.blankLine()
             sourceBuilder.scope(with: "init(data: UnsafeMutableRawPointer, device: MTLDevice)") {
+                for ci in constantInputs {
+                    let tensor = self.context.tensors[ci]!
+                    let floats = tensor.floats
+                    
+                    switch tensor.dims.count {
+                    case 4:
+                        let constantData = floats.withUnsafeBufferPointer { pointer -> Data in
+                            return Data(buffer: pointer)
+                        }
+                        let constantOffset = context.add(data: constantData)
+                            
+                        sourceBuilder.add(line: "self._\(ci) = MPSImage(device: device, imageDescriptor: MPSImageDescriptor(channelFormat: .float32, width: \(Int(tensor.dims[3])), height: \(Int(tensor.dims[2])), featureChannels: \(Int(tensor.dims[1]))))")
+                        sourceBuilder.add(line: "self._\(ci).writeBytes(data.advanced(by: \(constantOffset)), dataLayout: .featureChannelsxHeightxWidth, imageIndex: 0)")
+                    default: ()
+                    }
+
+                }
+                
                 for c in converters {
                     c.contributeInit(using: self.context)
-                    
-                    for input in c.graphInputs {
-                        if let constantInput = self.context.tensors[input] {
-                            let floats = constantInput.floats
-                            switch constantInput.dims.count {
-                            case 0, 1:
-                                let constantData = floats.withUnsafeBufferPointer { pointer -> Data in
-                                    return Data(buffer: pointer)
-                                }
-                                
-                                let constantOffset = self.context.add(data: constantData)
-                                
-                                self.context.sourceBuilder.add(line: "self._\(input) = Tensor<Float>(shape: [\(constantInput.dims[safe: 0] ?? 1)], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(constantOffset)).assumingMemoryBound(to: Float.self), count: \(constantInput.dims[safe: 0] ?? 1)), on: device)")
-                            case 4:
-                                let constantData = floats.transposed(to: [0, 2, 3, 1], assuming: constantInput.dims.map(Int.init)).withUnsafeBufferPointer { pointer -> Data in
-                                    return Data(buffer: pointer)
-                                }
-                                
-                                let constantOffset = self.context.add(data: constantData)
-                                
-                                self.context.sourceBuilder.add(line: "self._\(input) = Tensor<Float>(shape: [\(constantInput.dims[0]), \(constantInput.dims[2]), \(constantInput.dims[3]), \(constantInput.dims[1])], scalars: UnsafeBufferPointer<Float>(start: data.advanced(by: \(constantOffset)).assumingMemoryBound(to: Float.self), count: \(Int(constantInput.dims.reduce(1, *)))), on: device)")
-                            default: fatalError("Constants with rank \(constantInput.dims.count) are not supported")
-                            }
-                        }
-                    }
                 }
             }
             sourceBuilder.blankLine()

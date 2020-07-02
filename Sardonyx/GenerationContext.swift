@@ -8,9 +8,14 @@ class GenerationContext {
     
     public var sourceBuilder = SourceStringBuilder()
     
+    public var inputShapes: [String: [Int]] = [:]
     init(graph: Onnx_GraphProto) {
         self.tensors = graph.initializer.reduce(into: [:]) { (res, tensor) in
             res[tensor.name] = tensor
+        }
+        
+        for graphInput in graph.input {
+            self.inputShapes[graphInput.name] = graphInput.type.tensorType.shape.dim.map { Int($0.dimValue) }
         }
     }
     

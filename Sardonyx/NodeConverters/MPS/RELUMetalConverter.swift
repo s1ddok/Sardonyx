@@ -22,7 +22,7 @@ class RELUMetalConverter: NodeConverter, FusableMetalNeuron {
         let readCount = context.readCounts[self.node.output[0], default: 0]
         
         if readCount > 1 {
-            context.sourceBuilder.add(line: "(_\(self.node.output[0]) as? MPSTemporaryImage)?.readCount = 2")
+            context.sourceBuilder.add(line: "(_\(self.node.output[0]) as? MPSTemporaryImage)?.readCount = \(readCount)")
         }
     }
     

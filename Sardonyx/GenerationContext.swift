@@ -9,6 +9,10 @@ class GenerationContext {
     public var sourceBuilder = SourceStringBuilder()
     
     public var inputShapes: [String: [Int]] = [:]
+    
+    var shouldConvertWeightsToFloat16 = false
+    var shouldConvertConstantsToFloat16 = false
+    
     init(graph: Onnx_GraphProto) {
         self.tensors = graph.initializer.reduce(into: [:]) { (res, tensor) in
             res[tensor.name] = tensor

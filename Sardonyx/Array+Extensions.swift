@@ -1,3 +1,5 @@
+import Foundation
+
 extension Array {
     public func transposed(to order: [Int], assuming shape: [Int]) -> [Element] where Element: Numeric {
         precondition(self.count == shape.reduce(1, *))
@@ -77,5 +79,22 @@ extension Array {
     /// Returns the element at the specified index if it is within bounds, otherwise nil.
     internal subscript (safe index: Index) -> Element? {
         return self.indices.contains(index) ? self[index] : nil
+    }
+}
+
+
+extension Array where Element == Float {
+    enum Precision {
+        case full, half
+    }
+    
+    func data(with precision: Precision) -> Data {
+        switch precision {
+        case .full:
+            return self.withUnsafeBufferPointer { Data(buffer: $0) }
+        case .half:
+            var tmp = self
+            return float32to16(&tmp, count: self.count)!.withUnsafeBufferPointer { Data(buffer: $0) }
+        }
     }
 }

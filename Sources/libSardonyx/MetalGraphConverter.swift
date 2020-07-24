@@ -1,11 +1,11 @@
 import Foundation
 
-class MetalGraphConverter {
+public class MetalGraphConverter {
     let context: GenerationContext
     let graph: Onnx_GraphProto
     let converters: [String: NodeConverter.Type]
     
-    init(graph: Onnx_GraphProto, shouldConvertWeightsToFloat16: Bool = false, shouldConvertConstantsToFloat16: Bool = false) {
+    public init(graph: Onnx_GraphProto, shouldConvertWeightsToFloat16: Bool = false, shouldConvertConstantsToFloat16: Bool = false) {
         let context = GenerationContext(graph: graph)
         context.shouldConvertWeightsToFloat16 = shouldConvertWeightsToFloat16
         context.shouldConvertConstantsToFloat16 = shouldConvertWeightsToFloat16
@@ -157,7 +157,7 @@ class MetalGraphConverter {
         return sourceBuilder.result
     }
     
-    func serialize(in directoryURL: URL, with name: String? = nil) throws {
+    public func serialize(in directoryURL: URL, with name: String? = nil) throws {
         let source = try self.source()
         let swiftURL = directoryURL.appendingPathComponent("\(name ?? self.graph.name).swift")
         try source.write(to: swiftURL, atomically: true, encoding: .utf16)

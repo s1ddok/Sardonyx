@@ -1,11 +1,11 @@
 import Foundation
 
-class GraphConverter {
+public class GraphConverter {
     let context: GenerationContext
     let graph: Onnx_GraphProto
     let converters: [String: NodeConverter.Type]
     
-    init(graph: Onnx_GraphProto) {
+    public init(graph: Onnx_GraphProto) {
         self.graph = graph
         self.context = GenerationContext(graph: graph)
         self.converters = [
@@ -146,7 +146,7 @@ class GraphConverter {
         return sourceBuilder.result
     }
     
-    func serialize(in directoryURL: URL, with name: String? = nil) throws {
+    public func serialize(in directoryURL: URL, with name: String? = nil) throws {
         let source = try self.source()
         let swiftURL = directoryURL.appendingPathComponent("\(name ?? self.graph.name).swift", isDirectory: false)
         try source.write(to: swiftURL, atomically: true, encoding: .utf16)

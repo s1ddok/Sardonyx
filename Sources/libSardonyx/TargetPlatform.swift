@@ -1,6 +1,6 @@
 import ArgumentParser
 
-enum TargetPlatform: String {
+public enum TargetPlatform: String {
     case s4tf
     case mps
 }

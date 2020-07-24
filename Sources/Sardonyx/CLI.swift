@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import libSardonyx
 
 struct Options: ParsableArguments {
     @Option(help: ArgumentHelp("Target platform to generate code for", valueName: "target-platform"))

@@ -1,12 +1,12 @@
 import Foundation
 
 extension Array {
-    public func transposed(to order: [Int], assuming shape: [Int]) -> [Element] where Element: Numeric {
+    public func transposed(to order: [Int], assuming shape: [Int]) -> [Element] {
         precondition(self.count == shape.reduce(1, *))
         let ndim = order.count
         
         let newShape = shape.indices.map { shape[order[$0]] }
-        var newArray = [Element].init(repeating: 0, count: newShape.reduce(1, *))
+        var newArray = [Element].init(repeating: self[0], count: newShape.reduce(1, *))
         
         let srcShape = shape
         let dstStride = newShape.enumerated().map { idx, dim -> Int in

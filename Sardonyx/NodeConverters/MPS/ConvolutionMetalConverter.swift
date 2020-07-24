@@ -11,13 +11,10 @@ class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, Pa
             bias = context.tensors[node.input[2]]
         }
         
-        let weightData = weight.floats.transposed(to: [0, 2, 3, 1],
-                                                     assuming: weight.dims.map(Int.init)).withUnsafeBufferPointer { pointer -> Data in
-            return Data(buffer: pointer)
-        }
-        let biasData = bias?.floats.withUnsafeBufferPointer { pointer -> Data in
-            return Data(buffer: pointer)
-        }
+        let weightFloats = weight.floats.transposed(to: [0, 2, 3, 1], assuming: weight.dims.map(Int.init))
+            
+        let weightData = weightFloats.data(with: context.shouldConvertWeightsToFloat16 ? .half : .full)
+        let biasData = bias?.floats.data(with: .full)
         
         self.weightOffset = context.add(data: weightData)
         self.outputChannels = Int(weight.dims[0])
@@ -43,10 +40,12 @@ class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, Pa
         if let bn = self.batchNorm {
             batchNormParameters = ", mean: data.advanced(by: \(bn.meanOffset)).assumingMemoryBound(to: Float.self), variance: data.advanced(by: \(bn.variangeOffset)).assumingMemoryBound(to: Float.self), gamma: data.advanced(by: \(bn.scaleOffset)).assumingMemoryBound(to: Float.self), beta: data.advanced(by: \(bn.BOffset)).assumingMemoryBound(to: Float.self), epsilon: \(bn.eps)"
         }
-        context.sourceBuilder.add(line: "let dataSource_\(self.node.name) = ConvolutionDataSource(weights: data.advanced(by: \(self.weightOffset)), bias: \(biasString), outputChannels: \(self.outputChannels), kernelHeight: \(self.kernel.height), kernelWidth: \(self.kernel.width), inputChannels: \(self.inputChannels), dilations: (\(self.dilations.height), \(self.dilations.width)), strides: (\(self.strides.height), \(self.strides.width)), groups: \(self.groups), neuron: \(self.neuron?.neuron ?? "nil")\(batchNormParameters))")
+        context.sourceBuilder.add(line: "let dataSource_\(self.node.name) = ConvolutionDataSource(weights: data.advanced(by: \(self.weightOffset)), weightDataType: \(context.shouldConvertWeightsToFloat16 ? ".float16" : ".float32"), bias: \(biasString), outputChannels: \(self.outputChannels), kernelHeight: \(self.kernel.height), kernelWidth: \(self.kernel.width), inputChannels: \(self.inputChannels), dilations: (\(self.dilations.height), \(self.dilations.width)), strides: (\(self.strides.height), \(self.strides.width)), groups: \(self.groups), neuron: \(self.neuron?.neuron ?? "nil")\(batchNormParameters))")
         
         context.sourceBuilder.add(line: "self.convolution_\(self.node.name) = MPSCNNConvolution(device: device, weights: dataSource_\(self.node.name))")
-        //context.sourceBuilder.add(line: "self.convolution_\(self.node.name).accumulatorPrecisionOption = .half")
+        if context.shouldConvertWeightsToFloat16 {
+            context.sourceBuilder.add(line: "self.convolution_\(self.node.name).accumulatorPrecisionOption = .half")
+        }
         context.sourceBuilder.add(line: "self.convolution_\(self.node.name).destinationImageAllocator = MPSTemporaryImage.defaultAllocator()")
         
         if let pad = self.pad {

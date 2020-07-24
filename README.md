@@ -33,9 +33,11 @@ I use `SwiftProtobuf` to generate 100% Swift *ONNX* bindings and official `Swift
 
 ## Build and Run
 
-Currently I started with an `xcodeproj` setup but `Package.swift` will be introduced shortly. In order to run the tool on your own model you have to provide at least two arguments in a `Scheme` settings, i.e.: 
+You can run Sardonyx as a CLI with SwiftPM, or use it as a library (advanced usage for custom converters provision):
 
-![image](https://i.imgur.com/NmWnKZN.png)
+```
+swift run -c release Sardonyx --target-platform=s4tf --model-path=vgg19-7.onnx --output-directory=.
+```
 
 You have to specify target platform by `--target-platform` option. Currently it acceps `s4tf` or `mps` value.
 

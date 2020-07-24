@@ -5,9 +5,10 @@ class MetalGraphConverter {
     let graph: Onnx_GraphProto
     let converters: [String: NodeConverter.Type]
     
-    init(graph: Onnx_GraphProto) {
+    init(graph: Onnx_GraphProto, shouldConvertWeightsToFloat16: Bool = false, shouldConvertConstantsToFloat16: Bool = false) {
         let context = GenerationContext(graph: graph)
-        
+        context.shouldConvertWeightsToFloat16 = shouldConvertWeightsToFloat16
+        context.shouldConvertConstantsToFloat16 = shouldConvertWeightsToFloat16
         var constantFreeGraph = graph
         constantFreeGraph.node = constantFreeGraph.node.filter { node in
             if node.opType == "Constant" {
@@ -122,12 +123,11 @@ class MetalGraphConverter {
                     
                     switch tensor.dims.count {
                     case 4:
-                        let constantData = floats.withUnsafeBufferPointer { pointer -> Data in
-                            return Data(buffer: pointer)
-                        }
+                        let constantData = floats.data(with: context.shouldConvertConstantsToFloat16 ? .half : .full)
+                        let channelFormat = context.shouldConvertConstantsToFloat16 ? ".float16" : ".float32"
                         let constantOffset = context.add(data: constantData)
                             
-                        sourceBuilder.add(line: "self._\(ci) = MPSImage(device: device, imageDescriptor: MPSImageDescriptor(channelFormat: .float32, width: \(Int(tensor.dims[3])), height: \(Int(tensor.dims[2])), featureChannels: \(Int(tensor.dims[1]))))")
+                        sourceBuilder.add(line: "self._\(ci) = MPSImage(device: device, imageDescriptor: MPSImageDescriptor(channelFormat: \(channelFormat), width: \(Int(tensor.dims[3])), height: \(Int(tensor.dims[2])), featureChannels: \(Int(tensor.dims[1]))))")
                         sourceBuilder.add(line: "self._\(ci).writeBytes(data.advanced(by: \(constantOffset)), dataLayout: .featureChannelsxHeightxWidth, imageIndex: 0)")
                     default: ()
                     }

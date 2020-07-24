@@ -148,7 +148,7 @@ class GraphConverter {
     
     func serialize(in directoryURL: URL, with name: String? = nil) throws {
         let source = try self.source()
-        let swiftURL = directoryURL.appendingPathComponent("\(name ?? self.graph.name).swift")
+        let swiftURL = directoryURL.appendingPathComponent("\(name ?? self.graph.name).swift", isDirectory: false)
         try source.write(to: swiftURL, atomically: true, encoding: .utf16)
         try self.context.globalDataBlob.write(to: directoryURL.appendingPathComponent("\(name ?? self.graph.name).data"))
     }

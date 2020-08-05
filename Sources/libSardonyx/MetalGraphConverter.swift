@@ -8,7 +8,7 @@ public class MetalGraphConverter {
     public init(graph: Onnx_GraphProto, shouldConvertWeightsToFloat16: Bool = false, shouldConvertConstantsToFloat16: Bool = false) {
         let context = GenerationContext(graph: graph)
         context.shouldConvertWeightsToFloat16 = shouldConvertWeightsToFloat16
-        context.shouldConvertConstantsToFloat16 = shouldConvertWeightsToFloat16
+        context.shouldConvertConstantsToFloat16 = shouldConvertConstantsToFloat16
         var constantFreeGraph = graph
         constantFreeGraph.node = constantFreeGraph.node.filter { node in
             if node.opType == "Constant" {

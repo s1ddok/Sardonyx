@@ -20,7 +20,7 @@ Adding BNNS, MLCompute and code for other languages is under consideration, but 
 - [ ] Add more layer converters and it's variations (edge-cases, paddings)
 - [x] Support constant inputs for all the layers
 - [ ] Normalize node/graph names to be valid Swift identifiers 
-- [ ] Provide Sardonyx-as-a-library experience for users to provide their own custom converters
+- [x] Provide Sardonyx-as-a-library experience for users to provide their own custom converters
 - [x] Support node sequence folding (like inject subsequent RELU into previous Conv node's activation)
 - [ ] Support other scalar types outside of Float (i.e. Float16 and quantized weights)
 - [x] Introduce a Metal Performance Shaders backend 

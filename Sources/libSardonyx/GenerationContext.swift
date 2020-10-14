@@ -1,8 +1,8 @@
 import Foundation
 
-class GenerationContext {
-    private(set) var tensors: [String: Onnx_TensorProto]
-    var readCounts: [String: Int] = [:]
+public class GenerationContext {
+    private(set) public var tensors: [String: Onnx_TensorProto]
+    public var readCounts: [String: Int] = [:]
     
     private(set) var globalDataBlob = Data()
     

@@ -1,4 +1,4 @@
-protocol NodeConverter {
+public protocol NodeConverter {
     init(node: Onnx_NodeProto)
     // this array should represent list of inputs that are ideologically equal to graph nodes
     // e.g. for Upsample layers: first input should be considered as a graph input, but second input is not

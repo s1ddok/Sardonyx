@@ -43,9 +43,11 @@ class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, Pa
         context.sourceBuilder.add(line: "let dataSource_\(self.node.name) = ConvolutionDataSource(weights: data.advanced(by: \(self.weightOffset)), weightDataType: \(context.shouldConvertWeightsToFloat16 ? ".float16" : ".float32"), bias: \(biasString), outputChannels: \(self.outputChannels), kernelHeight: \(self.kernel.height), kernelWidth: \(self.kernel.width), inputChannels: \(self.inputChannels), dilations: (\(self.dilations.height), \(self.dilations.width)), strides: (\(self.strides.height), \(self.strides.width)), groups: \(self.groups), neuron: \(self.neuron?.neuron ?? "nil")\(batchNormParameters))")
         
         context.sourceBuilder.add(line: "self.convolution_\(self.node.name) = MPSCNNConvolution(device: device, weights: dataSource_\(self.node.name))")
+        // TODO: Not really dependand properties
         if context.shouldConvertWeightsToFloat16 {
             context.sourceBuilder.add(line: "self.convolution_\(self.node.name).accumulatorPrecisionOption = .half")
         }
+        // TODO: Should be conditional
         context.sourceBuilder.add(line: "self.convolution_\(self.node.name).destinationImageAllocator = MPSTemporaryImage.defaultAllocator()")
         
         if let pad = self.pad {
@@ -60,6 +62,12 @@ class ConvolutionMetalConverter: NodeConverter, FusableMetalNeuronInjectable, Pa
     
     func contributeImplementation(using context: GenerationContext) {
         context.sourceBuilder.add(line: "let _\(self.graphOutputs[0]) = self.convolution_\(self.node.name).encode(commandBuffer: commandBuffer, sourceImage: _\(self.pad?.node.input[0] ?? self.node.input[0]))")
+        
+        let readCount = context.readCounts[self.node.output[0], default: 0]
+        
+        if readCount > 1 {
+            context.sourceBuilder.add(line: "(_\(self.node.output[0]) as? MPSTemporaryImage)?.readCount = \(readCount)")
+        }
     }
     
     let node: Onnx_NodeProto

@@ -5,7 +5,26 @@ public class MetalGraphConverter {
     let graph: Onnx_GraphProto
     let converters: [String: NodeConverter.Type]
     
-    public init(graph: Onnx_GraphProto, shouldConvertWeightsToFloat16: Bool = false, shouldConvertConstantsToFloat16: Bool = false) {
+    public enum InputType {
+        case mpsImage, mtlTexture, mtlBuffer
+        
+        var stringRepresentation: String {
+            switch self {
+            case .mpsImage: return "MPSImage"
+            case .mtlBuffer: return "MTLBuffer"
+            case .mtlTexture: return "MTLTexture"
+            }
+        }
+    }
+    
+    private var userInputTypes: [String: InputType]
+    
+    public init(graph: Onnx_GraphProto,
+                userConverters: [String: NodeConverter.Type] = [:],
+                userInputTypes: [String: InputType] = [:],
+                shouldConvertWeightsToFloat16: Bool = false,
+                shouldConvertConstantsToFloat16: Bool = false) {
+        self.userInputTypes = userInputTypes
         let context = GenerationContext(graph: graph)
         context.shouldConvertWeightsToFloat16 = shouldConvertWeightsToFloat16
         context.shouldConvertConstantsToFloat16 = shouldConvertConstantsToFloat16
@@ -38,10 +57,10 @@ public class MetalGraphConverter {
             "BatchNormalization": BatchNormMetalConverter.self,
             "Upsample": UpsampleMetalConverter.self,
             "LeakyRelu": LeakyRELUMetalConverter.self
-        ]
+        ].merging(userConverters, uniquingKeysWith: { $1 })
     }
     
-    func source() throws -> String {
+    func source(modelName: String? = nil) throws -> String {
         var converters = self.graph.node.compactMap { self.converters[$0.opType]!.init(node: $0) }
         
         var i = 0
@@ -92,7 +111,7 @@ public class MetalGraphConverter {
         sourceBuilder.add(line: "import MetalPerformanceShaders")
         sourceBuilder.blankLine()
         
-        sourceBuilder.scope(with: "public class \(self.graph.name.validIdentifier)") {
+        sourceBuilder.scope(with: "public class \(modelName ?? self.graph.name.validIdentifier)") {
             let userInputs = self.graph
                 .input
                 .filter { self.context.tensors[$0.name] == nil }
@@ -140,7 +159,7 @@ public class MetalGraphConverter {
             }
             sourceBuilder.blankLine()
             
-            sourceBuilder.scope(with: "public func encode(commandBuffer: MTLCommandBuffer, \(userInputs.map { "_\($0.name.validIdentifier): MPSImage" }.joined(separator: ", "))) -> Output") {
+            sourceBuilder.scope(with: "public func encode(commandBuffer: MTLCommandBuffer, \(userInputs.map { "_\($0.name.validIdentifier): \((self.userInputTypes[$0.name] ?? .mpsImage).stringRepresentation)" }.joined(separator: ", "))) -> Output") {
                 for c in converters {
                     c.contributeImplementation(using: self.context)
                 }
@@ -158,8 +177,8 @@ public class MetalGraphConverter {
     }
     
     public func serialize(in directoryURL: URL, with name: String? = nil) throws {
-        let source = try self.source()
-        let swiftURL = directoryURL.appendingPathComponent("\(name ?? self.graph.name).swift")
+        let source = try self.source(modelName: name)
+        let swiftURL = directoryURL.appendingPathComponent("\(name ?? self.graph.name).swift", isDirectory: false)
         try source.write(to: swiftURL, atomically: true, encoding: .utf16)
         try self.context.globalDataBlob.write(to: directoryURL.appendingPathComponent("\(name ?? self.graph.name).data"))
     }

@@ -2,7 +2,7 @@ import Foundation
 
 extension Onnx_TensorProto {
 
-    var integers: [Int] {
+    public var integers: [Int] {
         switch Int(self.dataType) {
         case DataType.int32.rawValue,
              DataType.int16.rawValue,
@@ -44,7 +44,7 @@ extension Onnx_TensorProto {
         }
     }
 
-    var floats: [Float] {
+    public var floats: [Float] {
         switch Int(self.dataType) {
         case DataType.int32.rawValue,
              DataType.int16.rawValue,
@@ -78,7 +78,7 @@ extension Onnx_TensorProto {
         }
     }
 
-    var length: Int {
+    public var length: Int {
         return Int(self.dims.reduce(1, *))
     }
 

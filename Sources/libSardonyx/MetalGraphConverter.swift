@@ -79,6 +79,7 @@ public class MetalGraphConverter {
             
             if
                 let bnInjectable = converters[i] as? BatchNormInjectable,
+                converters[i].graphOutputs.count == 1,
                 let subsequentBN = converters[i + 1] as? BatchNormMetalConverter
             {
                 bnInjectable.batchNorm = subsequentBN

@@ -32,12 +32,24 @@ public func float16to32(_ input: UnsafeMutableRawPointer, count: Int) -> [Float]
 ///   - count: Number of elements in the array.
 /// - Returns: An array of `Float16`s.
 public func float32to16(_ input: UnsafeMutablePointer<Float>, count: Int) -> [Float16]? {
-    var output = [Float16](repeating: 0, count: count)
-    var bufferFloat32 = vImage_Buffer(data: input, height: 1, width: UInt(count), rowBytes: count * 4)
-    var bufferFloat16 = vImage_Buffer(data: &output, height: 1, width: UInt(count), rowBytes: count * 2)
-
-    if vImageConvert_PlanarFtoPlanar16F(&bufferFloat32, &bufferFloat16, 0) != kvImageNoError {
-        return nil
+    var output = [Float16](
+        repeating: 0,
+        count: count
+    )
+    let status = output.withUnsafeMutableBytes { p -> Int in
+        var bufferFloat32 = vImage_Buffer(
+            data: input,
+            height: 1,
+            width: .init(count),
+            rowBytes: count * 4
+        )
+        var bufferFloat16 = vImage_Buffer(
+            data: p.baseAddress,
+            height: 1,
+            width: .init(count),
+            rowBytes: count * 2
+        )
+        return vImageConvert_PlanarFtoPlanar16F(&bufferFloat32, &bufferFloat16, 0)
     }
-    return output
+    return status == kvImageNoError ? output : nil
 }

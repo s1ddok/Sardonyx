@@ -23,7 +23,7 @@ public class GenerationContext {
         }
     }
     
-    func add(data: Data) -> Int {
+    public func add(data: Data) -> Int {
         let offset = self.globalDataBlob.count
         
         self.globalDataBlob.append(data)
